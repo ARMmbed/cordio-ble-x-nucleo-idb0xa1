@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "CordioBle.h"
+#include "CordioBLE.h"
 #include "CordioHCIDriver.h"
 #include "CordioHCITransportDriver.h"
 #include "mbed.h"
