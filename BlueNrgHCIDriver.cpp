@@ -10,6 +10,9 @@
 #include "bstream.h"
 #include "hci_mbed_os_adaptation.h"
 #include "bluenrg_targets.h"
+#include "Thread.h"
+#include "Semaphore.h"
+#include "Mutex.h"
 
 #define HCI_RESET_RAND_CNT        4
 
@@ -414,7 +417,9 @@ public:
      * @param irq Pin used by the module to signal data are available.
      */
     TransportDriver(PinName mosi, PinName miso, PinName sclk, PinName ncs, PinName irq)
-        : spi(mosi, miso, sclk), nCS(ncs), irq(irq) { }
+        : spi(mosi, miso, sclk), nCS(ncs), irq(irq) {
+        _spi_thread.start(callback(this, &TransportDriver::spi_read_cb));
+    }
 
     virtual ~TransportDriver() { }
 
@@ -461,7 +466,7 @@ private:
         uint16_t data_written = 0;
         uint16_t write_buffer_size = 0;
 
-        core_util_critical_section_enter();
+        _spi_mutex.lock();
 
         irq.disable_irq();
 
@@ -494,7 +499,7 @@ private:
         nCS = 1;
         irq.enable_irq();
 
-        core_util_critical_section_exit();
+        _spi_mutex.unlock();
 
         return data_written;
     }
@@ -506,7 +511,7 @@ private:
         uint16_t read_length = 0;
         uint16_t data_available = 0;
 
-        core_util_critical_section_enter();
+        _spi_mutex.lock();
 
         nCS = 0;
 
@@ -528,7 +533,7 @@ private:
 
     exit:
         nCS = 1;
-        core_util_critical_section_exit();
+        _spi_mutex.unlock();
 
         return read_length;
     }
@@ -539,25 +544,29 @@ private:
      */
     void HCI_Isr(void)
     {
+        _spi_read_sem.release();
+    }
+
+    void spi_read_cb() {
         uint8_t data_buffer[256];
-        while(irq == 1) {
-            uint16_t data_read = spiRead(data_buffer, sizeof(data_buffer));
-            on_data_received(data_buffer, data_read);
+        while(true) {
+            _spi_read_sem.wait();
+            while(irq == 1) {
+                uint16_t data_read = spiRead(data_buffer, sizeof(data_buffer));
+                on_data_received(data_buffer, data_read);
+            }
         }
     }
 
     /**
      * Unsafe SPI, does not lock when SPI access happens.
      */
-    class UnsafeSPI : public ::mbed::SPI {
-    public:
-        UnsafeSPI(PinName mosi, PinName miso, PinName sclk, PinName ssel=NC) :
-            SPI(mosi, miso, sclk, ssel) { }
-        virtual void lock(void) { }
-        virtual void unlock(void) { }
-    } spi;
+    ::mbed::SPI spi;
     DigitalOut nCS;
     InterruptIn irq;
+    rtos::Thread _spi_thread;
+    rtos::Semaphore _spi_read_sem;
+    rtos::Mutex _spi_mutex;
 };
 
 } // namespace bluenrg
