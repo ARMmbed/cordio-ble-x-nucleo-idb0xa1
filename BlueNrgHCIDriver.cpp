@@ -14,19 +14,21 @@
 #include "Semaphore.h"
 #include "Mutex.h"
 
-#define HCI_RESET_RAND_CNT        4
+#define HCI_RESET_RAND_CNT              4
 
-#define VENDOR_SPECIFIC_EVENT     0xFF
-#define EVT_BLUE_INITIALIZED      0x0001
-#define ACI_READ_CONFIG_DATA_OPCODE 0xFC0D
-#define ACI_WRITE_CONFIG_DATA_OPCODE 0xFC0C
-#define ACI_GATT_INIT_OPCODE 0xFD01
-#define ACI_GAP_INIT_OPCODE 0xFC8A
+#define VENDOR_SPECIFIC_EVENT           0xFF
+#define EVT_BLUE_INITIALIZED            0x0001
+#define ACI_READ_CONFIG_DATA_OPCODE     0xFC0D
+#define ACI_WRITE_CONFIG_DATA_OPCODE    0xFC0C
+#define ACI_GATT_INIT_OPCODE            0xFD01
+#define ACI_GAP_INIT_OPCODE             0xFC8A
 
-#define PUBLIC_ADDRESS_OFFSET 0x00
-#define RANDOM_STATIC_ADDRESS_OFFSET 0x80
-#define LL_WITHOUT_HOST_OFFSET 0x2C
-#define ROLE_OFFSET 0x2D
+#define PUBLIC_ADDRESS_OFFSET           0x00
+#define RANDOM_STATIC_ADDRESS_OFFSET    0x80
+#define LL_WITHOUT_HOST_OFFSET          0x2C
+#define ROLE_OFFSET                     0x2D
+
+#define SPI_STACK_SIZE                  1024
 
 namespace ble {
 namespace vendor {
@@ -417,7 +419,7 @@ public:
      * @param irq Pin used by the module to signal data are available.
      */
     TransportDriver(PinName mosi, PinName miso, PinName sclk, PinName ncs, PinName irq)
-        : spi(mosi, miso, sclk), nCS(ncs), irq(irq), _spi_thread(osPriorityNormal, 1024) {
+        : spi(mosi, miso, sclk), nCS(ncs), irq(irq), _spi_thread(osPriorityNormal, SPI_STACK_SIZE, _spi_thread_stack) {
         _spi_thread.start(callback(this, &TransportDriver::spi_read_cb));
     }
 
@@ -565,6 +567,7 @@ private:
     DigitalOut nCS;
     InterruptIn irq;
     rtos::Thread _spi_thread;
+    uint8_t _spi_thread_stack[SPI_STACK_SIZE];
     rtos::Semaphore _spi_read_sem;
     rtos::Mutex _spi_mutex;
 };
