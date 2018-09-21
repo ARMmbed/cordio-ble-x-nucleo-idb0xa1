@@ -417,7 +417,7 @@ public:
      * @param irq Pin used by the module to signal data are available.
      */
     TransportDriver(PinName mosi, PinName miso, PinName sclk, PinName ncs, PinName irq)
-        : spi(mosi, miso, sclk), nCS(ncs), irq(irq) {
+        : spi(mosi, miso, sclk), nCS(ncs), irq(irq), _spi_thread(osPriorityNormal, 1024) {
         _spi_thread.start(callback(this, &TransportDriver::spi_read_cb));
     }
 
