@@ -470,8 +470,6 @@ private:
 
         _spi_mutex.lock();
 
-        irq.disable_irq();
-
         /* CS reset */
         nCS = 0;
 
@@ -499,7 +497,6 @@ private:
 
     exit:
         nCS = 1;
-        irq.enable_irq();
 
         _spi_mutex.unlock();
 
