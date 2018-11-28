@@ -470,8 +470,6 @@ private:
 
         _spi_mutex.lock();
 
-        irq.disable_irq();
-
         /* CS reset */
         nCS = 0;
 
@@ -499,7 +497,6 @@ private:
 
     exit:
         nCS = 1;
-        irq.enable_irq();
 
         _spi_mutex.unlock();
 
@@ -512,8 +509,6 @@ private:
         uint8_t header_slave[5] = { 0xaa, 0x00, 0x00, 0x00, 0x00};
         uint16_t read_length = 0;
         uint16_t data_available = 0;
-
-        _spi_mutex.lock();
 
         nCS = 0;
 
@@ -535,7 +530,6 @@ private:
 
     exit:
         nCS = 1;
-        _spi_mutex.unlock();
 
         return read_length;
     }
@@ -553,10 +547,13 @@ private:
         uint8_t data_buffer[256];
         while(true) {
             _spi_read_sem.wait();
+
+            _spi_mutex.lock();
             while(irq == 1) {
                 uint16_t data_read = spiRead(data_buffer, sizeof(data_buffer));
                 on_data_received(data_buffer, data_read);
             }
+            _spi_mutex.unlock();
         }
     }
 
