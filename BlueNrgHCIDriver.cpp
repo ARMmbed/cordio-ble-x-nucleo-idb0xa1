@@ -49,6 +49,15 @@ public:
     HCIDriver(cordio::CordioHCITransportDriver& transport_driver, PinName rst) :
         cordio::CordioHCIDriver(transport_driver), rst(rst) { }
 
+#if MBED_VERSION >= MBED_ENCODE_VERSION(5, 11, 0)
+    /**
+     * @see CordioHCIDriver::get_buffer_pool_description
+     */
+    virtual cordio::buf_pool_desc_t get_buffer_pool_description() {
+        return get_default_buffer_pool_description();
+    }
+#endif
+
     /**
      * @see CordioHCIDriver::do_initialize
      */
