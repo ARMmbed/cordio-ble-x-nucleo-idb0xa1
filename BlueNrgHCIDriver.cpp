@@ -468,7 +468,7 @@ private:
         uint16_t data_written = 0;
         uint16_t write_buffer_size = 0;
 
-        _spi_mutex.lock();
+        spi.lock();
 
         /* CS reset */
         nCS = 0;
@@ -498,7 +498,7 @@ private:
     exit:
         nCS = 1;
 
-        _spi_mutex.unlock();
+        spi.unlock();
 
         return data_written;
     }
@@ -548,12 +548,12 @@ private:
         while(true) {
             _spi_read_sem.wait();
 
-            _spi_mutex.lock();
+            spi.lock();
             while(irq == 1) {
                 uint16_t data_read = spiRead(data_buffer, sizeof(data_buffer));
                 on_data_received(data_buffer, data_read);
             }
-            _spi_mutex.unlock();
+            spi.unlock();
         }
     }
 
@@ -566,7 +566,6 @@ private:
     rtos::Thread _spi_thread;
     uint8_t _spi_thread_stack[SPI_STACK_SIZE];
     rtos::Semaphore _spi_read_sem;
-    rtos::Mutex _spi_mutex;
 };
 
 } // namespace bluenrg
