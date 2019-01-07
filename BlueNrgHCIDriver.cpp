@@ -57,6 +57,15 @@ public:
     }
 
     /**
+     * @see CordioHCIDriver::get_buffer_pool_description
+     */
+    ble::vendor::cordio::buf_pool_desc_t get_buffer_pool_description()
+    {
+        // Use default buffer pool
+        return ble::vendor::cordio::CordioHCIDriver::get_default_buffer_pool_description();
+    }
+
+    /**
      * @see CordioHCIDriver::start_reset_sequence
      */
     virtual void start_reset_sequence() {
