@@ -555,7 +555,7 @@ private:
     void spi_read_cb() {
         uint8_t data_buffer[256];
         while(true) {
-            _spi_read_sem.wait();
+            _spi_read_sem.acquire();
 
             _spi_mutex.lock();
             while(irq == 1) {
