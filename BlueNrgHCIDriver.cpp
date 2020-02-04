@@ -132,10 +132,7 @@ public:
 
             case ACI_READ_CONFIG_DATA_OPCODE:
                 // note: will send the HCI command to send the random address
-                cordio::BLE::deviceInstance().getGap().setAddress(
-                    BLEProtocol::AddressType::RANDOM_STATIC,
-                    pMsg
-                );
+                set_random_static_address(pMsg);
                 break;
 
             case HCI_OPCODE_LE_SET_RAND_ADDR:
