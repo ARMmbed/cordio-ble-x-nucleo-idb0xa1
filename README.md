@@ -1,3 +1,7 @@
+# Deprecation notice. 
+
+This repository should be used with mbed-os 5 applications. It is not compatible or mandatory for mbed-os 6 which embeds this Bluetooth controller code.  
+
 # Cordio BLE-X-NUCLEO-IDB0XA1
 
 BLE_API wrapper Library for X-NUCLEO-IDB05A1 BlueNRG (Bluetooth Low Energy) Expansion Board. It uses ARM Cordio stack instead of the ST BlueNRG stack. 
